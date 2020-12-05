@@ -1,3 +1,5 @@
+from functools import reduce
+
 
 def run(file):
     rows = []
@@ -5,23 +7,33 @@ def run(file):
         for line in file:
             rows.append(line.split())
 
-    print(mark_rows(rows.copy()))
+    count_trees(rows)
 
 
-def mark_rows(rows):
-    index_pos = 3
+def count_trees(rows):
+    slopes = [(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)]
+    tree_counts = []
+    for slope in slopes:
+        tree_counts.append(mark_rows(rows.copy(), slope))
+
+    print(tree_counts)
+    print(reduce((lambda x, y: x*y), tree_counts))
+
+
+def mark_rows(rows, slope):
+    index_pos = slope[0]
     tree_count = 0
     first_row = True
     for row in rows:
         if first_row:
             first_row = False
             continue
+        if slope[1] == 2 and rows.index(row) % 2 != 0:
+            continue
         if (row[0][index_pos] == '#'):
-            row[0] = row[0][:index_pos] + 'X' + row[0][index_pos + 1:]
             tree_count += 1
-        index_pos += 3
+        index_pos += slope[0]
         index_pos %= len(row[0])
-
     return tree_count
 
 
@@ -30,11 +42,10 @@ if __name__ == "__main__":
     from pathlib import Path
 
     parser = argparse.ArgumentParser(
-        description='Get the word frequency in a text file.')
     parser.add_argument('file', help='file to read')
-    args = parser.parse_args()
+    args=parser.parse_args()
 
-    file = Path(args.file)
+    file=Path(args.file)
     if file.is_file():
         run(file)
     else:
