@@ -1,3 +1,4 @@
+from validator import PassportValidator
 import itertools
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
@@ -9,17 +10,40 @@ def run(file):
         rows = []
         for line in file:
             rows.append(line.split())
-        # passport_data = [line.strip() for line in file if line.strip()]
-        # data.append(passport_data)
         passport_data = []
         valid_passport_counter = 0
         for item in process_data(rows):
+            # flatten the list
             passport_data.append(list(itertools.chain(*item)))
-        pp.pprint(passport_data)
+        # pp.pprint(passport_data)
     passports = []
     for passport in passport_data:
         passports.append(create_passport(passport))
-    pp.pprint(passports)
+    pp.pprint(len(passports))
+    validate_passports(filter_invalid_passports(passports))
+
+
+def filter_invalid_passports(passports):
+    counter = 0
+    valid_passports = []
+    for passport in passports:
+        if len(passport.keys()) == 8:
+            counter += 1
+            valid_passports.append(passport)
+        if len(passport.keys()) == 7 and 'cid' not in passport.keys():
+            counter += 1
+            valid_passports.append(passport)
+    print(counter)
+    return valid_passports
+
+
+def validate_passports(passports):
+    validity_states = []
+    for passport in passports:
+        validity_states.append(PassportValidator.validate(passport))
+    print(f"Array of all validity states: {validity_states}")
+    print(f"Length all validity states: {len(validity_states)}")
+    print(f"Count of all valid passports: {validity_states.count(True)}")
 
 
 def create_passport(passport_data):
@@ -32,18 +56,15 @@ def create_passport(passport_data):
 def process_data(rows):
     data = []
     tmp = []
-    for i, row in enumerate(rows.copy()):
-        print(f"the i is {i} and the row is {row}")
-        # on the first line, start a temporary data variable
+    for row in rows.copy():
         if row:
             # keep adding to that temp variable
             tmp.append(row)
         elif not row:
             # then we want to add the temp data var to a data list
             data.append(tmp)
-        # and reset the temp var to ''
+            # and reset the temp var
             tmp = []
-    # print(data)
     return data
 
 
