@@ -60,7 +60,7 @@ def process_data(rows):
         if row:
             # keep adding to that temp variable
             tmp.append(row)
-        elif not row:
+        else:
             # then we want to add the temp data var to a data list
             data.append(tmp)
             # and reset the temp var
