@@ -1,7 +1,7 @@
 import pprint
 import re
 
-pp = pprint.PrettyPrinter(indent=4)
+pp = pprint.PrettyPrinter(indent=8, sort_dicts=False)
 
 # {'bright white': {'shiny gold': '1'},
 #     'dark olive': {'dotted black': '4', 'faded blue': '3'},
@@ -20,7 +20,7 @@ def run(file):
     with open(file) as file:
         lines = [line.strip() for line in file.readlines()]
     define_bag_rules(lines)
-    find_bag(target)
+    find_bag(target, sum=True)
 
 
 def define_bag_rules(lines):
@@ -38,17 +38,24 @@ def define_bag_rules(lines):
             if 'no other' in bag:
                 continue
             nested_key = re.split(r'\sbags?', bag[2:])[0]
-            value = bag[:1]
+            value = int(bag[:1])
             RULES[key][nested_key] = value
+    pp.pprint(RULES)
 
 
-def find_bag(bag):
+def find_bag(bag, sum=False):
     counter = 0
-    for key in RULES:
-        if find_bag_recursive(key, bag):
-            counter += 1
+    total_bags = 0
+    if sum:
+        total_bags = total_inner_bags(RULES[bag])
+    else:
+        for key in RULES:
+            if find_bag_recursive(key, bag):
+                counter += 1
 
     pp.pprint(f"Number of bags that contain the {target} bag is: {counter}")
+    pp.pprint(
+        f"Number of bags that are contained by the {target} bag is: {total_bags}")
 
 
 def find_bag_recursive(key, inner_bag):
@@ -59,6 +66,16 @@ def find_bag_recursive(key, inner_bag):
             if find_bag_recursive(bag, inner_bag):
                 return True
     return False
+
+
+def total_inner_bags(inner_bags):
+    if not inner_bags:
+        return 0
+    total = 0
+    for bag in inner_bags:
+        total += ((total_inner_bags(RULES[bag]) + 1) * inner_bags[bag])
+
+    return total
 
 
 if __name__ == "__main__":
